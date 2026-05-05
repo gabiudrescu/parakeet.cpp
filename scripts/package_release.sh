@@ -63,6 +63,10 @@ if [[ "$OS" == "macos" ]] && [[ -d /Applications ]]; then
     fi
 fi
 
+if [[ "$OS" == "macos" ]]; then
+    CMAKE_OSX_FLAGS="-DCMAKE_OSX_DEPLOYMENT_TARGET=15.0"
+fi
+
 echo "==> Building ${SLUG}"
 
 # ─── Configure + build ──────────────────────────────────────────────────────
@@ -72,6 +76,7 @@ cmake -S . -B "$BUILD_DIR" \
     -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DAXIOM_DIST_BUILD=ON \
+    ${CMAKE_OSX_FLAGS:+$CMAKE_OSX_FLAGS} \
     -DAXIOM_INSTALL=OFF \
     -DPARAKEET_INSTALL=OFF \
     -DPARAKEET_BUILD_CLI=ON \
