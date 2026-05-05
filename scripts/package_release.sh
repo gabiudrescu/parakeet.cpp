@@ -51,6 +51,18 @@ SLUG="parakeet-${VERSION}-${OS}-${ARCH}"
 STAGE_DIR="dist/${SLUG}"
 TARBALL="dist/${SLUG}.tar.gz"
 
+# CI workaround: select newest Xcode on the runner so newer Metal/MPS SDK
+# headers are available (macos-14 runners ship multiple Xcodes; default may
+# be too old for MPSNDArray APIs used by axiom).
+if [[ "$OS" == "macos" ]] && [[ -d /Applications ]]; then
+    NEWEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1 || true)
+    if [[ -n "$NEWEST_XCODE" ]] && [[ -d "$NEWEST_XCODE/Contents/Developer" ]]; then
+        echo "==> Selecting $NEWEST_XCODE"
+        sudo xcode-select -s "$NEWEST_XCODE/Contents/Developer" || true
+        xcodebuild -version || true
+    fi
+fi
+
 echo "==> Building ${SLUG}"
 
 # ─── Configure + build ──────────────────────────────────────────────────────
