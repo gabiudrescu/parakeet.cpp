@@ -95,11 +95,16 @@ cp "$BUILD_DIR/parakeet"                       "$STAGE_DIR/bin/"
 cp "$BUILD_DIR/examples/server/example-server" "$STAGE_DIR/bin/"
 
 # Copy libaxiom + symlinks (-a preserves symlinks, perms, timestamps).
-if [[ "$OS" == "macos" ]]; then
+# axiom may be built as static (.a, no copy needed; symbols are baked into
+# the executables) or dynamic (.dylib/.so, needs to ship alongside).
+if compgen -G "$BUILD_DIR/third_party/axiom/libaxiom.*.dylib" > /dev/null 2>&1; then
     cp -a "$BUILD_DIR/third_party/axiom/"libaxiom.*.dylib "$STAGE_DIR/lib/"
     cp -a "$BUILD_DIR/third_party/axiom/"libaxiom.dylib   "$STAGE_DIR/lib/"
-else
+elif compgen -G "$BUILD_DIR/third_party/axiom/libaxiom.so*" > /dev/null 2>&1; then
     cp -a "$BUILD_DIR/third_party/axiom/"libaxiom.so*     "$STAGE_DIR/lib/"
+else
+    echo "==> Static axiom build detected; nothing to copy to lib/"
+    rmdir "$STAGE_DIR/lib" 2>/dev/null || true
 fi
 
 cp -a include/parakeet "$STAGE_DIR/include/"
